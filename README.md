@@ -1,1 +1,1 @@
-# My Rare Plant Collection 
+# Rare Plant Collection App
