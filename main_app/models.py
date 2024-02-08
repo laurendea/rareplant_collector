@@ -2,6 +2,8 @@ from django.db import models
 
 from datetime import date
 
+from django.contrib.auth.models import User
+
 RARITY_OPTIONS= [
     ('Common', 'Common'),
     ('Uncommon', 'Uncommon'),
@@ -10,7 +12,38 @@ RARITY_OPTIONS= [
     ('Extinct in the Wild', 'Extinct in the Wild'),
 ]
 
+
 # Create your models here.
+
+
+class MusicPlaylist(models.Model):
+  name = models.CharField(max_length=50)
+  Genre = models.CharField(max_length=20)
+  length = models.DurationField()
+
+  def __str__(self):
+    return self.name
+
+
+class PlantNurture(models.Model):
+    RarePlant = models.ForeignKey('RarePlant', on_delete=models.CASCADE, related_name='nurtures')
+    date = models.DateField()
+    cleaned = models.BooleanField(default=False)
+    met_required_light = models.BooleanField(default=False)
+    met_required_humidity = models.BooleanField(default=False)
+    soil_moisture = models.CharField(max_length=255, blank=True, null=True)
+    soil_ph = models.DecimalField(max_digits=4, decimal_places=2)
+    watered = models.BooleanField(default=False, blank=True, null=True)
+    music_played = models.ManyToManyField(MusicPlaylist)
+    overall_appearance = models.TextField()
+
+    def __str__(self):
+        return f"{self.RarePlant.common_name} was nurtured on {self.date}"
+    
+    class Meta:
+        ordering = ['-date']
+
+
 class RarePlant(models.Model):
     common_name = models.CharField(max_length=200, blank=True, default='')
     botanical_name = models.CharField(max_length=200, unique=True, default='')
@@ -20,6 +53,7 @@ class RarePlant(models.Model):
     description = models.TextField(help_text="leaf shape, flower color, growth habit, and any distinctive features.", default='')
     poisonous = models.BooleanField(default=False, blank=True, null=True)
     toxic = models.BooleanField(default=False, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def nurtured_for_today(self):
         today = date.today()
@@ -57,28 +91,5 @@ class PlantOrigin(models.Model):
     def __str__(self):
         return f"{self.RarePlant.common_name} Origin - {self.origin_country}"
    
-class PlantNurture(models.Model):
-    RarePlant = models.ForeignKey('RarePlant', on_delete=models.CASCADE, related_name='nurtures')
-    date = models.DateField()
-    cleaned = models.BooleanField(default=False)
-    met_required_light = models.BooleanField(default=False)
-    met_required_humidity = models.BooleanField(default=False)
-    soil_moisture = models.CharField(max_length=255, blank=True, null=True)
-    soil_ph = models.DecimalField(max_digits=4, decimal_places=2)
-    watered = models.BooleanField(default=False, blank=True, null=True)
-    music_played = models.CharField(max_length=255, blank=True, null=True)
-    overall_appearance = models.TextField()
 
-    def __str__(self):
-        return f"{self.RarePlant.common_name} was nurtured on {self.date}"
-    
-    class Meta:
-        ordering = ['-date']
         
-class MusicPlaylist(models.Model):
-  name = models.CharField(max_length=50)
-  Genre = models.CharField(max_length=20)
-  length = models.DurationField()
-
-  def __str__(self):
-    return self.name
